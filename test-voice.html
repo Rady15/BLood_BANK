@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الصوت</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #e63946;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #d62828;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            min-height: 20px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار مكونات الصوت</h1>
+        
+        <h2>1. التعرف على الصوت</h2>
+        <button id="testRecognition">اختبار التعرف على الصوت</button>
+        
+        <h2>2. تحويل النص إلى كلام</h2>
+        <button id="testTTS">اختبار تحويل النص إلى كلام</button>
+        
+        <h2>3. الاتصال بـ Google AI</h2>
+        <button id="testGoogleAI">اختبار الاتصال بـ Google AI</button>
+        <input type="text" id="aiInput" placeholder="اكتب سؤالك هنا" style="width: 100%; padding: 10px; margin: 10px 0;">
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Test Speech Recognition
+        document.getElementById('testRecognition').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'جاري اختبار التعرف على الصوت...';
+            
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (!SpeechRecognition) {
+                    throw new Error('المتصفح لا يدعم التعرف على الصوت');
+                }
+                
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'ar-SA';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    resultDiv.innerHTML = `<div class="success">تم التعرف على الصوت بنجاح: "${transcript}"</div>`;
+                };
+                
+                recognition.onerror = function(event) {
+                    resultDiv.innerHTML = `<div class="error">خطأ في التعرف على الصوت: ${event.error}</div>`;
+                };
+                
+                recognition.start();
+                
+                setTimeout(() => {
+                    recognition.stop();
+                }, 5000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">خطأ: ${error.message}</div>`;
+            }
+        });
+        
+        // Test Text-to-Speech
+        document.getElementById('testTTS').addEventListener('click', function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'جاري اختبار تحويل النص إلى كلام...';
+            
+            try {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance('مرحباً بك في مساعد بنك الدم');
+                    utterance.lang = 'ar-SA';
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+                    
+                    utterance.onend = function() {
+                        resultDiv.innerHTML += '<div class="success"><br>تم تشغيل الصوت بنجاح</div>';
+                    };
+                    
+                    utterance.onerror = function(event) {
+                        resultDiv.innerHTML = `<div class="error">خطأ في تشغيل الصوت: ${event.error}</div>`;
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                    resultDiv.innerHTML = 'جاري تشغيل الصوت...';
+                } else {
+                    throw new Error('المتصفح لا يدعم تحويل النص إلى كلام');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">خطأ: ${error.message}</div>`;
+            }
+        });
+        
+        // Test Google AI (this would require backend)
+        document.getElementById('testGoogleAI').addEventListener('click', function() {
+            const resultDiv = document.getElementById('result');
+            const input = document.getElementById('aiInput').value;
+            
+            if (!input.trim()) {
+                resultDiv.innerHTML = '<div class="error">يرجى إدخال سؤال أولاً</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'اختبار الاتصال بـ Google AI يتطلب تنفيذ الخادم...';
+        });
+    </script>
+</body>
+</html>
